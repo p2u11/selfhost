@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p2u11's selfhost</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/7.4.47/css/materialdesignicons.min.css">
+    <script>
+        async function fetchStatus() {
+            try {
+                const response = await fetch('https://wild-math-35f1.pavliktt.workers.dev/');
+                const data = await response.json();
+
+                // Update status indicators
+                const statusUp = document.getElementById('status-up');
+                statusUp.textContent = data.up ? 'Online' : 'Offline';
+                statusUp.className = 'status-value ' + (data.up ? 'status-online' : 'status-offline');
+
+                // Hide/show other stats based on server status
+                const otherStats = document.querySelectorAll('.status-card:not(:first-child)');
+                if (!data.up) {
+                    otherStats.forEach(stat => stat.style.opacity = '0.4');
+                    document.getElementById('status-cpu').textContent = '—';
+                    document.getElementById('status-uptime').textContent = '—';
+                    document.getElementById('status-battery').textContent = '—';
+                    document.getElementById('status-temp').textContent = '—';
+                } else {
+                    otherStats.forEach(stat => stat.style.opacity = '1');
+
+                    // Update CPU
+                    document.getElementById('status-cpu').textContent = data.cpu.toFixed(2) + '%';
+                    const cpuBar = document.getElementById('status-cpu-bar');
+                    cpuBar.style.width = Math.min(data.cpu, 100) + '%';
+                    cpuBar.className = 'status-bar-fill ' + (data.cpu > 75 ? 'critical' : data.cpu > 50 ? 'warning' : 'normal');
+
+                    // Update Uptime
+                    const hours = Math.floor(data.uptime);
+                    const minutes = Math.floor((data.uptime - hours) * 60);
+                    document.getElementById('status-uptime').textContent = hours + 'h ' + minutes + 'm';
+
+                    // Update Battery
+                    document.getElementById('status-battery').textContent = data.battery + '%';
+                    const batteryBar = document.getElementById('status-battery-bar');
+                    batteryBar.style.width = data.battery + '%';
+                    batteryBar.className = 'status-bar-fill ' + (data.battery > 80 ? 'good' : data.battery > 50 ? 'normal' : 'warning');
+
+                    // Update Temperature
+                    document.getElementById('status-temp').textContent = data.temp + '°C';
+                }
+
+                // Update timestamp
+                const now = new Date();
+                document.getElementById('status-updated').textContent = 'Last updated: ' + now.toLocaleTimeString();
+            } catch (error) {
+                console.error('Failed to fetch status:', error);
+                document.getElementById('status-updated').textContent = 'Failed to load status';
+            }
+        }
+
+        // Fetch on page load
+        window.addEventListener('DOMContentLoaded', fetchStatus);
+
+        // Auto-refresh every 30 seconds
+        setInterval(fetchStatus, 30000);
+    </script>
+</head>
+
+<body>
+    <div id="main-content">
+        <h1>p2u11's selfhost</h1>
+        <div>
+            Well hello there! This is a landing page for my selfhosted services.<br /><br />
+        </div>
+        <div>
+            <h2>Services</h2>
+            <p>If you have any requests, feel free to ask!</p>
+            <div class="services-grid">
+                <a href="https://mozhi.p2u11.pp.ua" class="service-card">
+                    <i class="service-icon mdi mdi-translate"></i>
+                    <h3>Mozhi</h3>
+                    <p class="service-description">Text Translation</p>
+                    <p class="service-storage">API available, no Yandex engine</p>
+                </a>
+            </div>
+            <br />
+            <details>
+                <summary>Private services</summary>
+                <p>These services are only available to me and MAYBE my friends.</p>
+                <div class="services-grid">
+                    <a href="https://immich.p2u11.pp.ua" class="service-card">
+                        <i class="service-icon mdi mdi-camera"></i>
+                        <h3>Immich</h3>
+                        <p class="service-description">Photos</p>
+                        <p class="service-storage">128 GB allocated</p>
+                    </a>
+                    <a href="https://navidrome.p2u11.pp.ua" class="service-card">
+                        <i class="service-icon mdi mdi-music"></i>
+                        <h3>Navidrome</h3>
+                        <p class="service-description">Music</p>
+                    </a>
+                    <a href="https://nc.p2u11.pp.ua" class="service-card">
+                        <i class="service-icon mdi mdi-cloud"></i>
+                        <h3>Nextcloud</h3>
+                        <p class="service-description">File Storage</p>
+                        <p class="service-storage">~700 GB allocated</p>
+                    </a>
+                    <a href="https://bw.p2u11.pp.ua" class="service-card">
+                        <i class="service-icon mdi mdi-lock"></i>
+                        <h3>Vaultwarden</h3>
+                        <p class="service-description">Password Manager</p>
+                    </a>
+                </div>
+            </details>
+        </div>
+        <div>
+            <h2>Status</h2>
+            <div id="status-section" class="status-container">
+                <div class="status-grid">
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="mdi mdi-power"></i>
+                        </div>
+                        <div class="status-label">Status</div>
+                        <div class="status-value" id="status-up">—</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="mdi mdi-cpu-64-bit"></i>
+                        </div>
+                        <div class="status-label">CPU Usage</div>
+                        <div class="status-value" id="status-cpu">—</div>
+                        <div class="status-bar">
+                            <div class="status-bar-fill" id="status-cpu-bar"></div>
+                        </div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="mdi mdi-clock-outline"></i>
+                        </div>
+                        <div class="status-label">Uptime</div>
+                        <div class="status-value" id="status-uptime">—</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="mdi mdi-battery"></i>
+                        </div>
+                        <div class="status-label">Battery</div>
+                        <div class="status-value" id="status-battery">—</div>
+                        <div class="status-bar">
+                            <div class="status-bar-fill" id="status-battery-bar"></div>
+                        </div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="mdi mdi-thermometer"></i>
+                        </div>
+                        <div class="status-label">Temperature</div>
+                        <div class="status-value" id="status-temp">—</div>
+                    </div>
+                </div>
+                <p class="status-updated" id="status-updated">Updating...</p>
+            </div>
+        </div>
+        <div>
+            <h2>The victim</h2>
+            <p>Our tortured victim is an old MBP Mid-2012 that I daily-drove back in the day (by that I mean 2022-2025,
+                lol)</p>
+            <table class="specs-table">
+                <tr>
+                    <td class="specs-content">
+                        <h3>Specs:</h3>
+                        <ul>
+                            <li>CPU: Intel Core i5-3210M @ 2.50GHz</li>
+                            <li>RAM: 8 GB (upgraded from 4 GB)</li>
+                            <li>Storage: 1 TB Kodak SSD<br />
+                                <i>(I also plan on mounting a second 120 GB SSD and move the OS there)</i>
+                            </li>
+                            <li>OS: Alpine Linux
+                            </li>
+                            <li><i>Other specs aren't important cuz its a server now</i></li>
+                        </ul>
+                    </td>
+                    <td class="specs-image">
+                        <img src="server-portrait.jpg" alt="MacBook Pro Mid-2012" style="width: 75%;"><br />
+                        <a href="https://commons.wikimedia.org/wiki/File:Apple_MacBook_Pro,_model_A1278-8106.jpg"
+                            target="_blank">
+                            <i>Same model but the photo is not mine<br />© Raimond Spekking / CC BY-SA 4.0 (via
+                                Wikimedia Commons)</i>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+            <p>
+                As for the current condition, it has a cracked screen glass (but the screen itself is more than fine),
+                the battery life is HORRIBLE, also I accidentally busted the speakers (thanks VLC for letting me go more
+                than 100%
+                volume)<br />
+                The rubber legs are replaced with some for furniture, they work so its fine.
+            </p>
+
+            <h3>To-do:</h3>
+            <ol>
+                <li>Do something about high temperatures</li>
+                <li><del>Use 120 GB SSD for system</del></li>
+                <li><del>Change thermal paste</del></li>
+                <li><del>Switch to Ethernet for much higher speeds</del></li>
+                <li><del>Switch to server Linux (maybe Alpine?)</del></li>
+            </ol>
+
+            <h3>Changelog</h3>
+            <ul>
+                <li>Mar 28 maintenance:<ul>
+                        <li>Now using the 120 GB SSD for the system, unfortunately i didnt find the thingy to mount it
+                            instead of CD drive so I'm using SATA to USB adapter which is not secure and can sometimes
+                            lose connection.</li>
+                        <li>Installed Fedora Server (Cockpit comes built-in so cool)</li>
+                        <li>Temperatures went from about 47-52°C to 58°C unfortunately</li>
+                    </ul>
+                </li>
+                <li>Mar 26 maintenance:<ul>
+                        <li>Replaced thermal paste (went from 60°C to 52°C idle)</li>
+                        <li>Installed i965 GPU drivers and configured Immich to use them to process videos</li>
+                    </ul>
+                </li>
+                <li>Mar 25 maintenance:<ul>
+                        <li>Switched from Ubuntu 24.04 LTS to Alpine Linux</li>
+                        <li>Switched to Ethernet</li>
+                        <li>Moved to new location and tried fixing high temperatures (but it didn't work)</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>
